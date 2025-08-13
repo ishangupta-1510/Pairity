@@ -1,0 +1,53 @@
+module.exports = {
+  preset: 'react-native',
+  testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-gesture-handler|react-native-reanimated|react-native-vector-icons|react-native-linear-gradient|react-native-elements|react-native-paper|expo|@expo|expo-.*|@unimodules|unimodules|@react-native-async-storage|react-native-mmkv|react-native-toast-message|react-native-keyboard-aware-scroll-view)/)',
+  ],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@components/(.*)$': '<rootDir>/src/components/$1',
+    '^@screens/(.*)$': '<rootDir>/src/screens/$1',
+    '^@navigation/(.*)$': '<rootDir>/src/navigation/$1',
+    '^@services/(.*)$': '<rootDir>/src/services/$1',
+    '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
+    '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^@styles/(.*)$': '<rootDir>/src/styles/$1',
+    '^@assets/(.*)$': '<rootDir>/src/assets/$1',
+    '^@store/(.*)$': '<rootDir>/src/store/$1',
+    '^@constants/(.*)$': '<rootDir>/src/constants/$1',
+    '^@config/(.*)$': '<rootDir>/src/config/$1',
+    '^@contexts/(.*)$': '<rootDir>/src/contexts/$1',
+    '^@types/(.*)$': '<rootDir>/src/types/$1',
+  },
+  testMatch: [
+    '**/__tests__/**/*.js',
+    '**/?(*.)+(spec|test).js',
+    '**/__tests__/**/*.ts',
+    '**/?(*.)+(spec|test).ts',
+    '**/__tests__/**/*.tsx',
+    '**/?(*.)+(spec|test).tsx',
+  ],
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/index.js',
+    '!src/**/__tests__/**',
+    '!src/**/__mocks__/**',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  globals: {
+    __DEV__: true,
+  },
+  testTimeout: 10000,
+  verbose: true,
+};
