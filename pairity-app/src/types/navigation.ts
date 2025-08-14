@@ -58,6 +58,12 @@ export type ProfileStackParamList = {
   AdvancedNotificationSettings: undefined;
   HelpSupport: undefined;
   About: undefined;
+  // Premium Screens
+  PremiumLanding: undefined;
+  PremiumCheckout: undefined;
+  LikesYou: undefined;
+  AdvancedFilters: undefined;
+  Boost: undefined;
 };
 
 // Root Navigator Types

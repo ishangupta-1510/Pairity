@@ -18,12 +18,13 @@ import userReducer from './slices/userSlice';
 import themeReducer from './slices/themeSlice';
 import notificationReducer from './slices/notificationSlice';
 import videoCallReducer from './slices/videoCallSlice';
+import premiumReducer from './slices/premiumSlice';
 
 // Persist config
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'theme', 'notifications', 'videoCall'], // Only persist auth, theme, notifications, and video call
+  whitelist: ['auth', 'theme', 'notifications', 'videoCall', 'premium'], // Persist premium state
   blacklist: ['user'], // Don't persist user data (fetch fresh each time)
 };
 
@@ -56,6 +57,14 @@ const videoCallPersistConfig = {
   blacklist: ['isInCall', 'localStream', 'remoteStream', 'participants', 'callMessages', 'callEmojis', 'incomingCall'], // Don't persist active call state
 };
 
+// Premium persist config
+const premiumPersistConfig = {
+  key: 'premium',
+  storage: AsyncStorage,
+  whitelist: ['subscription', 'features', 'boosts', 'superLikes', 'receipts', 'savedFilterPresets', 'paymentMethods', 'travelLocations'],
+  blacklist: ['isLoading', 'error', 'purchaseFlow', 'activeBoostSession'], // Don't persist temporary state
+};
+
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
@@ -63,6 +72,7 @@ const rootReducer = combineReducers({
   theme: persistReducer(themePersistConfig, themeReducer),
   notifications: persistReducer(notificationPersistConfig, notificationReducer),
   videoCall: persistReducer(videoCallPersistConfig, videoCallReducer),
+  premium: persistReducer(premiumPersistConfig, premiumReducer),
 });
 
 // Create persisted reducer
