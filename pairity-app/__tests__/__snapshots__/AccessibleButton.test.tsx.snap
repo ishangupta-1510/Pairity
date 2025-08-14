@@ -1,0 +1,309 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccessibleButton Snapshot Tests matches snapshot for primary button 1`] = `
+<View
+  accessible={true}
+  accessibilityHint="Double tap to activate"
+  accessibilityLabel="Primary Button"
+  accessibilityRole="button"
+  accessibilityState={
+    Object {
+      "busy": false,
+      "disabled": false,
+      "selected": false,
+    }
+  }
+  activeOpacity={0.7}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#FF7979",
+      "borderRadius": 8,
+      "elevation": 2,
+      "flexDirection": "row",
+      "justifyContent": "center",
+      "minHeight": 44,
+      "opacity": 1,
+      "paddingHorizontal": 16,
+      "paddingVertical": 12,
+      "shadowColor": "#000000",
+      "shadowOffset": Object {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 2,
+    }
+  }
+  testID="primary-button"
+>
+  <Text
+    importantForAccessibility="no-hide-descendants"
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+        "fontWeight": "600",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "textAlign": "center",
+      }
+    }
+  >
+    Primary Button
+  </Text>
+</View>
+`;
+
+exports[`AccessibleButton Snapshot Tests matches snapshot for secondary button 1`] = `
+<View
+  accessible={true}
+  accessibilityHint="Double tap to activate"
+  accessibilityLabel="Secondary Button"
+  accessibilityRole="button"
+  accessibilityState={
+    Object {
+      "busy": false,
+      "disabled": false,
+      "selected": false,
+    }
+  }
+  activeOpacity={0.7}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#6C7CE7",
+      "borderRadius": 8,
+      "elevation": 1,
+      "flexDirection": "row",
+      "justifyContent": "center",
+      "minHeight": 44,
+      "opacity": 1,
+      "paddingHorizontal": 16,
+      "paddingVertical": 12,
+    }
+  }
+  testID="secondary-button"
+>
+  <Text
+    importantForAccessibility="no-hide-descendants"
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+        "fontWeight": "600",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "textAlign": "center",
+      }
+    }
+  >
+    Secondary Button
+  </Text>
+</View>
+`;
+
+exports[`AccessibleButton Snapshot Tests matches snapshot for button with icon 1`] = `
+<View
+  accessible={true}
+  accessibilityHint="Double tap to activate"
+  accessibilityLabel="Button with Icon"
+  accessibilityRole="button"
+  accessibilityState={
+    Object {
+      "busy": false,
+      "disabled": false,
+      "selected": false,
+    }
+  }
+  activeOpacity={0.7}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#FF7979",
+      "borderRadius": 8,
+      "elevation": 2,
+      "flexDirection": "row",
+      "justifyContent": "center",
+      "minHeight": 44,
+      "opacity": 1,
+      "paddingHorizontal": 16,
+      "paddingVertical": 12,
+      "shadowColor": "#000000",
+      "shadowOffset": Object {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 2,
+    }
+  }
+  testID="icon-button"
+>
+  <RNVectorIconsMaterialIcons
+    importantForAccessibility="no-hide-descendants"
+    name="star"
+    size={20}
+    color="#FFFFFF"
+  />
+  <Text
+    importantForAccessibility="no-hide-descendants"
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+        "fontWeight": "600",
+        "marginLeft": 8,
+        "marginRight": 0,
+        "textAlign": "center",
+      }
+    }
+  >
+    Button with Icon
+  </Text>
+</View>
+`;
+
+exports[`AccessibleButton Snapshot Tests matches snapshot for disabled button 1`] = `
+<View
+  accessible={true}
+  accessibilityHint="Button is disabled"
+  accessibilityLabel="Disabled Button"
+  accessibilityRole="button"
+  accessibilityState={
+    Object {
+      "busy": false,
+      "disabled": true,
+      "selected": false,
+    }
+  }
+  activeOpacity={0.7}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#FF7979",
+      "borderRadius": 8,
+      "elevation": 2,
+      "flexDirection": "row",
+      "justifyContent": "center",
+      "minHeight": 44,
+      "opacity": 0.6,
+      "paddingHorizontal": 16,
+      "paddingVertical": 12,
+      "shadowColor": "#000000",
+      "shadowOffset": Object {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 2,
+    }
+  }
+  testID="disabled-button"
+>
+  <Text
+    importantForAccessibility="no-hide-descendants"
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+        "fontWeight": "600",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "textAlign": "center",
+      }
+    }
+  >
+    Disabled Button
+  </Text>
+</View>
+`;
+
+exports[`AccessibleButton Snapshot Tests matches snapshot for loading button 1`] = `
+<View
+  accessible={true}
+  accessibilityHint="Please wait, action in progress"
+  accessibilityLabel="Loading, Loading Button"
+  accessibilityRole="button"
+  accessibilityState={
+    Object {
+      "busy": true,
+      "disabled": false,
+      "selected": false,
+    }
+  }
+  activeOpacity={0.7}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#FF7979",
+      "borderRadius": 8,
+      "elevation": 2,
+      "flexDirection": "row",
+      "justifyContent": "center",
+      "minHeight": 44,
+      "opacity": 1,
+      "paddingHorizontal": 16,
+      "paddingVertical": 12,
+      "shadowColor": "#000000",
+      "shadowOffset": Object {
+        "height": 2,
+        "width": 0,
+      },
+      "shadowOpacity": 0.1,
+      "shadowRadius": 2,
+    }
+  }
+  testID="loading-button"
+>
+  <ActivityIndicator
+    color="#FFFFFF"
+    importantForAccessibility="no-hide-descendants"
+    size="small"
+  />
+</View>
+`;
