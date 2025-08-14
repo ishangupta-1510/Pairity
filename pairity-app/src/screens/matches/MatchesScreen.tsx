@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -39,20 +40,16 @@ interface Match {
   isFavorite: boolean;
 }
 
-interface Conversation {
-  id: string;
-  match: Match;
-  messages: number;
-  lastActivity: string;
-}
+// Removed Conversation interface - not needed since messages are in separate Chat tab
 
 const MatchesScreen: React.FC = () => {
   const navigation = useNavigation();
+  const theme = useTheme();
   const [matches, setMatches] = useState<Match[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  // Removed conversations state - messages are handled in Chat tab
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches');
+  const [showNewMatches, setShowNewMatches] = useState(true);
   const [filterFavorites, setFilterFavorites] = useState(false);
 
   useEffect(() => {
@@ -119,17 +116,7 @@ const MatchesScreen: React.FC = () => {
         },
       ];
 
-      const mockConversations: Conversation[] = mockMatches
-        .filter(m => m.lastMessage)
-        .map(m => ({
-          id: m.id,
-          match: m,
-          messages: Math.floor(Math.random() * 50) + 1,
-          lastActivity: m.lastMessage!.timestamp,
-        }));
-
       setMatches(mockMatches);
-      setConversations(mockConversations);
     } catch (error) {
       console.error('Failed to load matches:', error);
     } finally {
@@ -153,7 +140,6 @@ const MatchesScreen: React.FC = () => {
 
   const unmatch = useCallback((matchId: string) => {
     setMatches(prev => prev.filter(m => m.id !== matchId));
-    setConversations(prev => prev.filter(c => c.match.id !== matchId));
   }, []);
 
   const renderNewMatches = () => {
@@ -164,8 +150,8 @@ const MatchesScreen: React.FC = () => {
     if (newMatches.length === 0) return null;
 
     return (
-      <View style={styles.newMatchesSection}>
-        <Text style={styles.sectionTitle}>New Matches</Text>
+      <View style={dynamicStyles.newMatchesSection}>
+        <Text style={dynamicStyles.sectionTitle}>New Matches</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -182,10 +168,10 @@ const MatchesScreen: React.FC = () => {
                 style={styles.newMatchPhoto}
               />
               {match.user.isOnline && <View style={styles.onlineIndicator} />}
-              <Text style={styles.newMatchName} numberOfLines={1}>
+              <Text style={dynamicStyles.newMatchName} numberOfLines={1}>
                 {match.user.name}
               </Text>
-              <Text style={styles.matchTime}>
+              <Text style={dynamicStyles.matchTime}>
                 {moment(match.matchedAt).fromNow()}
               </Text>
             </TouchableOpacity>
@@ -195,79 +181,14 @@ const MatchesScreen: React.FC = () => {
     );
   };
 
-  const renderConversation = ({ item }: { item: Conversation }) => {
-    const { match } = item;
-    return (
-      <TouchableOpacity
-        style={styles.conversationCard}
-        onPress={() => navigation.navigate('Chat', { matchId: match.id })}
-      >
-        <View style={styles.avatarContainer}>
-          <Image
-            source={{ uri: match.user.photos[0] }}
-            style={styles.conversationAvatar}
-          />
-          {match.user.isOnline && <View style={styles.onlineIndicator} />}
-        </View>
-
-        <View style={styles.conversationContent}>
-          <View style={styles.conversationHeader}>
-            <View style={styles.nameRow}>
-              <Text style={styles.conversationName}>{match.user.name}</Text>
-              {match.user.isPremium && (
-                <Icon name="star" size={16} color="#FFD43B" style={styles.premiumIcon} />
-              )}
-            </View>
-            <Text style={styles.conversationTime}>
-              {moment(match.lastMessage?.timestamp).fromNow()}
-            </Text>
-          </View>
-
-          {match.lastMessage && (
-            <View style={styles.messagePreview}>
-              {match.lastMessage.sender === 'me' && (
-                <Icon
-                  name={match.lastMessage.isRead ? 'done-all' : 'done'}
-                  size={14}
-                  color={match.lastMessage.isRead ? '#339AF0' : '#999'}
-                  style={styles.readIndicator}
-                />
-              )}
-              <Text
-                style={[
-                  styles.messageText,
-                  match.hasNewMessage && styles.unreadMessage,
-                ]}
-                numberOfLines={1}
-              >
-                {match.lastMessage.text}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {match.hasNewMessage && <View style={styles.newMessageBadge} />}
-
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => toggleFavorite(match.id)}
-        >
-          <Icon
-            name={match.isFavorite ? 'star' : 'star-border'}
-            size={20}
-            color={match.isFavorite ? '#FFD43B' : '#999'}
-          />
-        </TouchableOpacity>
-      </TouchableOpacity>
-    );
-  };
+  // Removed renderConversation - messages are handled in separate Chat tab
 
   const renderMatch = ({ item }: { item: Match }) => {
     if (item.lastMessage) return null; // Already in conversations
 
     return (
       <TouchableOpacity
-        style={styles.matchGrid}
+        style={dynamicStyles.matchGrid}
         onPress={() => navigation.navigate('Chat', { matchId: item.id })}
       >
         <Image
@@ -276,8 +197,8 @@ const MatchesScreen: React.FC = () => {
         />
         {item.user.isOnline && <View style={styles.onlineIndicatorGrid} />}
         <View style={styles.matchGridInfo}>
-          <Text style={styles.matchGridName}>{item.user.name}</Text>
-          <Text style={styles.matchGridTime}>
+          <Text style={dynamicStyles.matchGridName}>{item.user.name}</Text>
+          <Text style={dynamicStyles.matchGridTime}>
             {moment(item.matchedAt).fromNow()}
           </Text>
         </View>
@@ -285,10 +206,96 @@ const MatchesScreen: React.FC = () => {
     );
   };
 
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      backgroundColor: theme.colors.surface,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border,
+    },
+    headerTitle: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    headerSubtitle: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      marginTop: 2,
+    },
+    newMatchesSection: {
+      backgroundColor: theme.colors.surface,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: theme.colors.text,
+      marginLeft: 16,
+      marginBottom: 12,
+    },
+    // Removed conversation-related styles - handled in Chat tab
+    matchGrid: {
+      width: (screenWidth - 32) / 3,
+      margin: 4,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    matchGridName: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.text,
+      marginBottom: 2,
+    },
+    matchGridTime: {
+      fontSize: 12,
+      color: theme.colors.textSecondary,
+    },
+    emptyTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: theme.colors.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptySubtitle: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    newMatchName: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: theme.colors.text,
+      marginBottom: 2,
+    },
+    matchTime: {
+      fontSize: 12,
+      color: theme.colors.textSecondary,
+    },
+  });
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6B6B" />
+      <View style={dynamicStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -297,51 +304,17 @@ const MatchesScreen: React.FC = () => {
     ? matches.filter(m => m.isFavorite)
     : matches;
 
-  const filteredConversations = filterFavorites
-    ? conversations.filter(c => c.match.isFavorite)
-    : conversations;
+  // Remove conversations filtering since we're not showing messages tab
 
   return (
-    <View style={styles.container}>
-      {/* Header Tabs */}
-      <View style={styles.header}>
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'matches' && styles.activeTab,
-            ]}
-            onPress={() => setActiveTab('matches')}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'matches' && styles.activeTabText,
-              ]}
-            >
-              Matches ({filteredMatches.length})
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'messages' && styles.activeTab,
-            ]}
-            onPress={() => setActiveTab('messages')}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === 'messages' && styles.activeTabText,
-              ]}
-            >
-              Messages ({filteredConversations.length})
-            </Text>
-            {conversations.some(c => c.match.hasNewMessage) && (
-              <View style={styles.tabBadge} />
-            )}
-          </TouchableOpacity>
+    <View style={dynamicStyles.container}>
+      {/* Header */}
+      <View style={dynamicStyles.header}>
+        <View style={styles.headerContent}>
+          <Text style={dynamicStyles.headerTitle}>Your Matches</Text>
+          <Text style={dynamicStyles.headerSubtitle}>
+            {filteredMatches.length} {filteredMatches.length === 1 ? 'match' : 'matches'}
+          </Text>
         </View>
 
         <TouchableOpacity
@@ -351,127 +324,44 @@ const MatchesScreen: React.FC = () => {
           <Icon
             name={filterFavorites ? 'star' : 'star-border'}
             size={24}
-            color={filterFavorites ? '#FFD43B' : '#666'}
+            color={filterFavorites ? '#FFD700' : theme.colors.textSecondary}
           />
         </TouchableOpacity>
       </View>
 
-      {activeTab === 'matches' ? (
-        <ScrollView
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          {renderNewMatches()}
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {renderNewMatches()}
 
-          {filteredMatches.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Icon name="favorite-border" size={64} color="#ccc" />
-              <Text style={styles.emptyTitle}>No matches yet</Text>
-              <Text style={styles.emptySubtitle}>
-                Start swiping to find your perfect match!
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.matchesGrid}>
-              {filteredMatches.map(match => (
-                <View key={match.id}>{renderMatch({ item: match })}</View>
-              ))}
-            </View>
-          )}
-        </ScrollView>
-      ) : (
-        <SectionList
-          sections=[
-            {
-              title: 'Messages',
-              data: filteredConversations,
-            },
-          ]}
-          renderItem={renderConversation}
-          keyExtractor={item => item.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Icon name="chat-bubble-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyTitle}>No messages yet</Text>
-              <Text style={styles.emptySubtitle}>
-                When you match with people, your messages will appear here
-              </Text>
-            </View>
-          }
-        />
-      )}
+        {filteredMatches.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Icon name="favorite-border" size={64} color={theme.colors.textSecondary} />
+            <Text style={dynamicStyles.emptyTitle}>No matches yet</Text>
+            <Text style={dynamicStyles.emptySubtitle}>
+              Start swiping to find your perfect match!
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.matchesGrid}>
+            {filteredMatches.map(match => (
+              <View key={match.id}>{renderMatch({ item: match })}</View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  headerContent: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  header: {
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  tabs: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  tab: {
-    marginRight: 24,
-    paddingVertical: 8,
-    position: 'relative',
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#FF6B6B',
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#FF6B6B',
-  },
-  tabBadge: {
-    position: 'absolute',
-    top: 8,
-    right: -8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF6B6B',
   },
   filterButton: {
     padding: 8,
-  },
-  newMatchesSection: {
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 16,
-    marginBottom: 12,
   },
   newMatchesScroll: {
     paddingHorizontal: 16,
@@ -498,96 +388,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
-  newMatchName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 2,
-  },
-  matchTime: {
-    fontSize: 12,
-    color: '#999',
-  },
-  conversationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  conversationAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  conversationContent: {
-    flex: 1,
-  },
-  conversationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  conversationName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  premiumIcon: {
-    marginLeft: 6,
-  },
-  conversationTime: {
-    fontSize: 12,
-    color: '#999',
-  },
-  messagePreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  readIndicator: {
-    marginRight: 4,
-  },
-  messageText: {
-    fontSize: 14,
-    color: '#666',
-    flex: 1,
-  },
-  unreadMessage: {
-    fontWeight: '600',
-    color: '#333',
-  },
-  newMessageBadge: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FF6B6B',
-    marginLeft: 8,
-  },
-  favoriteButton: {
-    padding: 8,
-    marginLeft: 8,
-  },
+  // Removed conversation-related styles - handled in Chat tab
   matchesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 8,
-  },
-  matchGrid: {
-    width: (screenWidth - 32) / 3,
-    margin: 4,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
   },
   matchGridPhoto: {
     width: '100%',
@@ -608,34 +413,11 @@ const styles = StyleSheet.create({
   matchGridInfo: {
     padding: 8,
   },
-  matchGridName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  matchGridTime: {
-    fontSize: 12,
-    color: '#999',
-  },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
     paddingHorizontal: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 20,
   },
 });
 

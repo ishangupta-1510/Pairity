@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import { useTheme } from '@/components/ThemeProvider';
 import EmojiPicker from './components/EmojiPicker';
 import MessageBubble from './components/MessageBubble';
 import ChatHeader from './components/ChatHeader';
@@ -60,6 +61,7 @@ interface ChatUser {
 const ChatScreen: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const theme = useTheme();
   const { matchId } = route.params as { matchId: string };
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -409,8 +411,68 @@ const ChatScreen: React.FC = () => {
     );
   }
 
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      backgroundColor: theme.colors.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+    },
+    textInput: {
+      flex: 1,
+      maxHeight: 120,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      fontSize: 16,
+      color: theme.colors.text,
+      backgroundColor: theme.colors.background,
+      borderRadius: 20,
+      marginHorizontal: 8,
+    },
+    replyContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+    },
+    replyText: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+    },
+    replyLabel: {
+      fontSize: 12,
+      color: theme.colors.primary,
+      fontWeight: '600',
+      marginBottom: 2,
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <View style={dynamicStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={dynamicStyles.container}>
       <ChatHeader
         user={otherUser}
         onBack={() => navigation.goBack()}
@@ -437,34 +499,34 @@ const ChatScreen: React.FC = () => {
         {otherUser.isTyping && <TypingIndicator />}
 
         {replyingTo && (
-          <View style={styles.replyContainer}>
+          <View style={dynamicStyles.replyContainer}>
             <View style={styles.replyContent}>
-              <Text style={styles.replyLabel}>Replying to {replyingTo.sender === 'me' ? 'yourself' : otherUser.name}</Text>
-              <Text style={styles.replyText} numberOfLines={1}>
+              <Text style={dynamicStyles.replyLabel}>Replying to {replyingTo.sender === 'me' ? 'yourself' : otherUser.name}</Text>
+              <Text style={dynamicStyles.replyText} numberOfLines={1}>
                 {replyingTo.text || 'Media message'}
               </Text>
             </View>
             <TouchableOpacity onPress={() => setReplyingTo(null)}>
-              <Icon name="close" size={20} color="#666" />
+              <Icon name="close" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>
         )}
 
-        <View style={styles.inputContainer}>
+        <View style={dynamicStyles.inputContainer}>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => setShowMediaPicker(true)}
           >
-            <Icon name="add" size={24} color="#666" />
+            <Icon name="add" size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TextInput
             ref={inputRef}
-            style={styles.textInput}
+            style={dynamicStyles.textInput}
             value={inputText}
             onChangeText={setInputText}
             placeholder="Type a message..."
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.colors.textSecondary}
             multiline
             maxLength={1000}
           />
@@ -473,11 +535,11 @@ const ChatScreen: React.FC = () => {
             style={styles.actionButton}
             onPress={() => setShowEmojiPicker(!showEmojiPicker)}
           >
-            <Icon name="mood" size={24} color="#666" />
+            <Icon name="mood" size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           {inputText.trim() ? (
-            <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+            <TouchableOpacity style={[styles.sendButton, { backgroundColor: theme.colors.primary }]} onPress={sendMessage}>
               <Icon name="send" size={20} color="#fff" />
             </TouchableOpacity>
           ) : (
@@ -485,7 +547,7 @@ const ChatScreen: React.FC = () => {
               style={styles.actionButton}
               onPress={() => setIsRecording(true)}
             >
-              <Icon name="mic" size={24} color="#FF6B6B" />
+              <Icon name="mic" size={24} color={theme.colors.primary} />
             </TouchableOpacity>
           )}
         </View>
@@ -516,15 +578,6 @@ const ChatScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   messagesContainer: {
     flex: 1,
   },
@@ -548,37 +601,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     fontWeight: '500',
   },
-  replyContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
   replyContent: {
     flex: 1,
     marginRight: 12,
-  },
-  replyLabel: {
-    fontSize: 12,
-    color: '#FF6B6B',
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  replyText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   actionButton: {
     width: 40,
@@ -586,22 +611,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textInput: {
-    flex: 1,
-    maxHeight: 120,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
-    color: '#333',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    marginHorizontal: 8,
-  },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FF6B6B',
     alignItems: 'center',
     justifyContent: 'center',
   },

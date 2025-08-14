@@ -8,6 +8,7 @@ import {
 import { Image } from 'expo-image';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { User } from '@/types/discover';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface UserCardListProps {
   user: User;
@@ -22,6 +23,7 @@ const UserCardList: React.FC<UserCardListProps> = React.memo(({
   onLike, 
   onMessage 
 }) => {
+  const theme = useTheme();
   const formatLastActive = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -36,7 +38,7 @@ const UserCardList: React.FC<UserCardListProps> = React.memo(({
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
+    <TouchableOpacity style={[styles.container, { backgroundColor: theme.colors.surface }]} onPress={onPress} activeOpacity={0.9}>
       <View style={styles.content}>
         {/* Photo Section */}
         <View style={styles.photoSection}>
@@ -60,7 +62,7 @@ const UserCardList: React.FC<UserCardListProps> = React.memo(({
         {/* Info Section */}
         <View style={styles.infoSection}>
           <View style={styles.headerRow}>
-            <Text style={styles.name}>{user.name}, {user.age}</Text>
+            <Text style={[styles.name, { color: theme.colors.text }]}>{user.name}, {user.age}</Text>
             {user.isNew && (
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>NEW</Text>
@@ -70,33 +72,33 @@ const UserCardList: React.FC<UserCardListProps> = React.memo(({
 
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
-              <Icon name="location-on" size={14} color="#666" />
-              <Text style={styles.metaText}>{user.distance} miles</Text>
+              <Icon name="location-on" size={14} color={theme.colors.textSecondary} />
+              <Text style={[styles.metaText, { color: theme.colors.textSecondary }]}>{user.distance} miles</Text>
             </View>
             {!user.isOnline && (
-              <Text style={styles.lastActive}>{formatLastActive(user.lastActive)}</Text>
+              <Text style={[styles.lastActive, { color: theme.colors.textSecondary }]}>{formatLastActive(user.lastActive)}</Text>
             )}
           </View>
 
-          <Text style={styles.bio} numberOfLines={2}>
+          <Text style={[styles.bio, { color: theme.colors.textSecondary }]} numberOfLines={2}>
             {user.bio}
           </Text>
 
           {/* Interests */}
           <View style={styles.interestsRow}>
             {user.interests.slice(0, 3).map((interest, index) => (
-              <View key={index} style={styles.interestTag}>
-                <Text style={styles.interestText}>{interest}</Text>
+              <View key={index} style={[styles.interestTag, { backgroundColor: theme.colors.background }]}>
+                <Text style={[styles.interestText, { color: theme.colors.textSecondary }]}>{interest}</Text>
               </View>
             ))}
             {user.interests.length > 3 && (
-              <Text style={styles.moreInterests}>+{user.interests.length - 3}</Text>
+              <Text style={[styles.moreInterests, { color: theme.colors.textSecondary }]}>+{user.interests.length - 3}</Text>
             )}
           </View>
 
           {/* Match Percentage */}
           <View style={styles.matchContainer}>
-            <View style={styles.matchBar}>
+            <View style={[styles.matchBar, { backgroundColor: theme.colors.background }]}>
               <View 
                 style={[styles.matchFill, { width: `${user.matchPercentage}%` }]} 
               />
@@ -133,13 +135,12 @@ const UserCardList: React.FC<UserCardListProps> = React.memo(({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     marginBottom: 12,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -155,6 +156,7 @@ const styles = StyleSheet.create({
     width: 80,
     aspectRatio: 4/5, // Maintain proper aspect ratio
     borderRadius: 8,
+    backgroundColor: '#1A1A1D',
   },
   onlineIndicator: {
     position: 'absolute',

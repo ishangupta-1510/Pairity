@@ -13,6 +13,9 @@ import HomeScreen from '@/screens/main/HomeScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import SettingsScreen from '@/screens/main/SettingsScreen';
 import DiscoverScreen from '@/screens/discover/DiscoverScreen';
+import ChatListScreen from '@/screens/chat/ChatListScreen';
+import ChatScreen from '@/screens/chat/ChatScreen';
+import MatchesScreen from '@/screens/matches/MatchesScreen';
 
 const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
   <View style={styles.placeholder}>
@@ -56,8 +59,8 @@ const MatchesStackNavigator: React.FC = () => (
   <MatchesStack.Navigator>
     <MatchesStack.Screen 
       name="Matches" 
-      component={() => <PlaceholderScreen title="Matches" />}
-      options={{ title: 'Matches' }}
+      component={MatchesScreen}
+      options={{ headerShown: false }}
     />
   </MatchesStack.Navigator>
 );
@@ -68,8 +71,13 @@ const ChatStackNavigator: React.FC = () => (
   <ChatStack.Navigator>
     <ChatStack.Screen 
       name="ChatList" 
-      component={() => <PlaceholderScreen title="Messages" />}
-      options={{ title: 'Messages' }}
+      component={ChatListScreen}
+      options={{ headerShown: false }}
+    />
+    <ChatStack.Screen 
+      name="Chat" 
+      component={ChatScreen}
+      options={{ headerShown: false }}
     />
   </ChatStack.Navigator>
 );

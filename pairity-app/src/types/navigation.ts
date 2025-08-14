@@ -42,8 +42,9 @@ export type MatchesStackParamList = {
 // Chat Stack Types
 export type ChatStackParamList = {
   ChatList: undefined;
-  ChatRoom: { chatId: string; userName: string };
-  ChatSettings: { chatId: string };
+  Chat: { matchId: string };
+  ChatInfo: { matchId: string };
+  VideoCall: { userId: string };
 };
 
 // Profile Stack Types

@@ -11,8 +11,8 @@ import {
   Share,
   Alert,
   RefreshControl,
+  Image,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -21,6 +21,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'react-native-image-picker';
 import { ProgressBar } from 'react-native-paper';
 import CustomButton from '@/components/CustomButton';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -39,6 +40,7 @@ interface ProfilePrompt {
 }
 
 const ProfileScreen: React.FC = () => {
+  const theme = useTheme();
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
@@ -46,6 +48,7 @@ const ProfileScreen: React.FC = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [profileCompleteness, setProfileCompleteness] = useState(0.75);
 
@@ -161,6 +164,7 @@ const ProfileScreen: React.FC = () => {
 
   const renderPhoto = ({ item, index }: { item: ProfilePhoto; index: number }) => (
     <TouchableOpacity
+      style={styles.photoContainer}
       onPress={() => {
         setSelectedPhotoIndex(index);
         setShowPhotoModal(true);
@@ -169,7 +173,7 @@ const ProfileScreen: React.FC = () => {
       <Image 
         source={{ uri: item.uri }} 
         style={styles.photo}
-        contentFit="cover"
+        resizeMode="cover"
       />
       {item.isMain && (
         <View style={styles.mainPhotoBadge}>
@@ -212,7 +216,7 @@ const ProfileScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
@@ -222,34 +226,57 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.headerActions}>
             <TouchableOpacity onPress={handleShareProfile} style={styles.headerButton}>
-              <Icon name="share" size={24} color="#333" />
+              <Icon name="share" size={24} color={theme.colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSettings} style={styles.headerButton}>
-              <Icon name="settings" size={24} color="#333" />
+              <Icon name="settings" size={24} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Photo Gallery */}
-          <FlatList
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            data={photos}
-            renderItem={renderPhoto}
-            keyExtractor={(item) => item.id}
-            style={styles.photoGallery}
-          />
+          <View style={styles.photoGalleryContainer}>
+            {/* Photo Indicators - Fixed at top */}
+            <View style={styles.photoIndicators}>
+              {photos.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.photoIndicator,
+                    idx === currentPhotoIndex && styles.photoIndicatorActive,
+                  ]}
+                />
+              ))}
+            </View>
+            
+            <FlatList
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              data={photos}
+              renderItem={renderPhoto}
+              keyExtractor={(item) => item.id}
+              style={styles.photoGallery}
+              snapToInterval={screenWidth}
+              decelerationRate="fast"
+              bounces={false}
+              onScroll={(event) => {
+                const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+                setCurrentPhotoIndex(index);
+              }}
+              scrollEventThrottle={16}
+            />
+          </View>
           
           {photos.length < 6 && (
-            <TouchableOpacity style={styles.addPhotoButton} onPress={handlePhotoUpload}>
-              <Icon name="add-a-photo" size={24} color="#666" />
-              <Text style={styles.addPhotoText}>Add Photo</Text>
+            <TouchableOpacity style={[styles.addPhotoButton, { backgroundColor: theme.colors.surface }]} onPress={handlePhotoUpload}>
+              <Icon name="add-a-photo" size={24} color={theme.colors.text} />
+              <Text style={[styles.addPhotoText, { color: theme.colors.text }]}>Add Photo</Text>
             </TouchableOpacity>
           )}
 
           {/* Profile Completeness */}
           <View style={styles.completenessContainer}>
-            <Text style={styles.completenessText}>
+            <Text style={[styles.completenessText, { color: theme.colors.textSecondary }]}>
               Profile {Math.round(profileCompleteness * 100)}% Complete
             </Text>
             <ProgressBar
@@ -260,28 +287,29 @@ const ProfileScreen: React.FC = () => {
           </View>
 
           {/* Edit Profile Button */}
-          <CustomButton
-            title="Edit Profile"
-            onPress={handleEditProfile}
-            variant="primary"
-            size="large"
-            fullWidth
-            style={styles.editButton}
-          />
+          <View style={styles.editButtonContainer}>
+            <CustomButton
+              title="Edit Profile"
+              onPress={handleEditProfile}
+              variant="primary"
+              size="large"
+              fullWidth
+            />
+          </View>
         </View>
 
         {/* Basic Information */}
         <View style={styles.section}>
           <View style={styles.basicInfo}>
             <View style={styles.nameContainer}>
-              <Text style={styles.name}>{profileData.name}, {profileData.age}</Text>
+              <Text style={[styles.name, { color: theme.colors.text }]}>{profileData.name}, {profileData.age}</Text>
               {user?.isVerified && (
                 <Icon name="verified" size={20} color="#339AF0" style={styles.verifiedIcon} />
               )}
             </View>
             <View style={styles.locationContainer}>
-              <Icon name="location-on" size={16} color="#666" />
-              <Text style={styles.location}>{profileData.location}</Text>
+              <Icon name="location-on" size={16} color={theme.colors.textSecondary} />
+              <Text style={[styles.location, { color: theme.colors.textSecondary }]}>{profileData.location}</Text>
             </View>
           </View>
 
@@ -315,8 +343,8 @@ const ProfileScreen: React.FC = () => {
 
         {/* About Me */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About Me</Text>
-          <Text style={styles.bio}>{profileData.bio}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>About Me</Text>
+          <Text style={[styles.bio, { color: theme.colors.text }]}>{profileData.bio}</Text>
           
           <Text style={styles.subsectionTitle}>Interests</Text>
           <View style={styles.interestsContainer}>
@@ -406,7 +434,7 @@ const ProfileScreen: React.FC = () => {
                 <Image 
                   source={{ uri: item.uri }} 
                   style={styles.modalPhoto}
-                  contentFit="contain"
+                  resizeMode="contain"
                 />
               )}
               keyExtractor={(item) => item.id}
@@ -433,10 +461,9 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: '#151517',
     paddingBottom: 20,
   },
   headerActions: {
@@ -449,12 +476,23 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 12,
   },
+  photoGalleryContainer: {
+    height: screenWidth * 1.2, // Proper height for photos
+    position: 'relative',
+    overflow: 'visible', // Ensure indicators aren't clipped
+  },
   photoGallery: {
-    aspectRatio: 4/5, // Standard portrait ratio for dating apps
+    flex: 1,
+  },
+  photoContainer: {
+    width: screenWidth,
+    height: screenWidth * 1.2,
+    position: 'relative',
   },
   photo: {
-    width: '100%',
-    aspectRatio: 4/5,
+    width: screenWidth,
+    height: screenWidth * 1.2,
+    backgroundColor: '#1A1A1D',
   },
   mainPhotoBadge: {
     position: 'absolute',
@@ -470,24 +508,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  photoIndicators: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    zIndex: 10,
+    height: 8,
+  },
+  photoIndicator: {
+    flex: 1,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    marginHorizontal: 2,
+    borderRadius: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  photoIndicatorActive: {
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   addPhotoButton: {
     position: 'absolute',
     bottom: 100,
     right: 20,
-    backgroundColor: '#fff',
     borderRadius: 30,
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
   },
   addPhotoText: {
     marginLeft: 8,
-    color: '#666',
     fontWeight: '600',
   },
   completenessContainer: {
@@ -496,20 +559,19 @@ const styles = StyleSheet.create({
   },
   completenessText: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 8,
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#2A2A2F',
     borderRadius: 4,
   },
-  editButton: {
-    marginHorizontal: 20,
+  editButtonContainer: {
+    paddingHorizontal: 20,
     marginTop: 16,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: '#151517',
     marginTop: 10,
     padding: 20,
   },
@@ -524,7 +586,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
   },
   verifiedIcon: {
     marginLeft: 8,
@@ -535,7 +596,6 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 16,
-    color: '#666',
     marginLeft: 4,
   },
   infoGrid: {
@@ -557,7 +617,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 16,
   },
   subsectionTitle: {
@@ -569,7 +628,6 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 16,
-    color: '#333',
     lineHeight: 24,
   },
   interestsContainer: {
@@ -703,8 +761,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalPhoto: {
-    width: '100%',
-    flex: 1,
+    width: screenWidth,
+    height: screenWidth * 1.2,
   },
   modalClose: {
     position: 'absolute',

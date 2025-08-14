@@ -87,10 +87,6 @@ const HomeScreen: React.FC = () => {
     ],
   };
 
-  const matchRateData = {
-    labels: ['Match Rate'],
-    data: [0.76],
-  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -135,7 +131,7 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.recommendationDistance}>{item.distance} miles</Text>
             </View>
             <View style={styles.matchPercentageContainer}>
-              <Text style={styles.matchPercentage}>{item.matchPercentage}% Match</Text>
+              <Text style={styles.matchPercentage} numberOfLines={1}>{item.matchPercentage}% Match</Text>
             </View>
           </View>
         </View>
@@ -267,26 +263,6 @@ const HomeScreen: React.FC = () => {
             />
           </View>
 
-          {/* Match Rate */}
-          <View style={styles.chartCard}>
-            <Text style={styles.chartTitle}>Match Rate</Text>
-            <ProgressChart
-              data={matchRateData}
-              width={screenWidth - 48}
-              height={200}
-              strokeWidth={16}
-              radius={60}
-              chartConfig={{
-                backgroundColor: '#fff',
-                backgroundGradientFrom: '#fff',
-                backgroundGradientTo: '#fff',
-                color: (opacity = 1) => `rgba(81, 207, 102, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
-              }}
-              hideLegend={false}
-              style={styles.chart}
-            />
-          </View>
         </View>
 
         {/* Recommendations */}
@@ -477,6 +453,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 8,
     padding: 8,
+    maxWidth: '100%',
+    flexShrink: 1,
   },
   recommendationName: {
     fontSize: 16,
@@ -500,6 +478,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     alignSelf: 'flex-start',
+    marginTop: 4,
+    maxWidth: '90%',
+    overflow: 'hidden',
   },
   matchPercentage: {
     fontSize: 12,

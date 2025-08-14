@@ -18,6 +18,7 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import CustomButton from '@/components/CustomButton';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ interface Photo {
 }
 
 const PhotosTab: React.FC = () => {
+  const theme = useTheme();
   const [photos, setPhotos] = useState<Photo[]>([
     { id: '1', uri: 'https://i.pravatar.cc/600?img=8', isMain: true, order: 0 },
     { id: '2', uri: 'https://i.pravatar.cc/600?img=9', isMain: false, order: 1 },
@@ -153,7 +155,7 @@ const PhotosTab: React.FC = () => {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Photo Tips</Text>
             <TouchableOpacity onPress={() => setShowTipsModal(false)}>
-              <Icon name="close" size={24} color="#333" />
+              <Icon name="close" size={24} color="#F5F5F7" />
             </TouchableOpacity>
           </View>
           
@@ -227,7 +229,7 @@ const PhotosTab: React.FC = () => {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Your Photos</Text>
           <TouchableOpacity onPress={() => setShowTipsModal(true)}>
-            <Icon name="help-outline" size={20} color="#666" />
+            <Icon name="help-outline" size={20} color="#A8A8A8" />
           </TouchableOpacity>
         </View>
         
@@ -250,7 +252,7 @@ const PhotosTab: React.FC = () => {
               style={styles.addPhotoButton}
               onPress={handlePhotoUpload}
             >
-              <Icon name="add" size={32} color="#666" />
+              <Icon name="add" size={32} color="#A8A8A8" />
               <Text style={styles.addPhotoText}>Add Photo</Text>
             </TouchableOpacity>
           )}
@@ -280,12 +282,14 @@ const PhotosTab: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0A0A0B',
   },
   section: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#151517',
     marginBottom: 10,
+    borderRadius: 12,
+    marginHorizontal: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -296,11 +300,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#F5F5F7',
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#A8A8A8',
     marginBottom: 16,
   },
   photosGrid: {
@@ -309,10 +313,10 @@ const styles = StyleSheet.create({
     marginHorizontal: -5,
   },
   photoContainer: {
-    width: (screenWidth - 50) / 3,
-    height: (screenWidth - 50) / 3,
+    width: (screenWidth - 82) / 3, // Adjusted for new margins
+    aspectRatio: 1, // Use aspect ratio for proper square photos
     margin: 5,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   photoContainerActive: {
@@ -322,6 +326,8 @@ const styles = StyleSheet.create({
   photo: {
     width: '100%',
     height: '100%',
+    position: 'absolute',
+    backgroundColor: '#1A1A1D',
   },
   mainBadge: {
     position: 'absolute',
@@ -350,20 +356,20 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   addPhotoButton: {
-    width: (screenWidth - 50) / 3,
-    height: (screenWidth - 50) / 3,
+    width: (screenWidth - 82) / 3, // Adjusted for new margins
+    aspectRatio: 1, // Use aspect ratio for consistency
     margin: 5,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: '#333',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#1A1A1D',
   },
   addPhotoText: {
     fontSize: 12,
-    color: '#666',
+    color: '#A8A8A8',
     marginTop: 4,
   },
   videoUploadButton: {
@@ -402,7 +408,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#151517',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
@@ -418,7 +424,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
+    color: '#F5F5F7',
   },
   tipsContent: {
     padding: 20,
@@ -435,12 +441,12 @@ const styles = StyleSheet.create({
   tipTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#F5F5F7',
     marginBottom: 4,
   },
   tipDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#A8A8A8',
   },
   tipButton: {
     margin: 20,

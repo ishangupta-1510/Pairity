@@ -7,6 +7,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface ChatHeaderProps {
   user: {
@@ -29,6 +30,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   onVideoCall,
   onInfo,
 }) => {
+  const theme = useTheme();
   const getStatusText = () => {
     if (user.isTyping) return 'typing...';
     if (user.isOnline) return 'online';
@@ -49,25 +51,25 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background, borderBottomColor: theme.colors.surface }]}>
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Icon name="arrow-back" size={24} color="#333" />
+        <Icon name="arrow-back" size={24} color={theme.colors.text} />
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.userInfo} onPress={onInfo}>
         <View style={styles.avatarContainer}>
           <Image source={{ uri: user.photo }} style={styles.avatar} />
-          {user.isOnline && <View style={styles.onlineIndicator} />}
+          {user.isOnline && <View style={[styles.onlineIndicator, { borderColor: theme.colors.background }]} />}
         </View>
         
         <View style={styles.userDetails}>
           <View style={styles.nameRow}>
-            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={[styles.userName, { color: theme.colors.text }]}>{user.name}</Text>
             {user.isPremium && (
               <Icon name="star" size={16} color="#FFD43B" style={styles.premiumIcon} />
             )}
           </View>
-          <Text style={[styles.userStatus, user.isTyping && styles.typingStatus]}>
+          <Text style={[styles.userStatus, { color: theme.colors.textSecondary }, user.isTyping && styles.typingStatus]}>
             {getStatusText()}
           </Text>
         </View>
@@ -75,10 +77,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionButton} onPress={onVideoCall}>
-          <Icon name="videocam" size={24} color="#333" />
+          <Icon name="videocam" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={onInfo}>
-          <Icon name="more-vert" size={24} color="#333" />
+          <Icon name="more-vert" size={24} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
     </View>
@@ -89,11 +91,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   backButton: {
     marginRight: 12,
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#1A1A1D',
   },
   onlineIndicator: {
     position: 'absolute',
@@ -121,7 +122,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#51CF66',
     borderWidth: 2,
-    borderColor: '#fff',
   },
   userDetails: {
     flex: 1,
@@ -133,14 +133,12 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
   },
   premiumIcon: {
     marginLeft: 6,
   },
   userStatus: {
     fontSize: 13,
-    color: '#999',
     marginTop: 2,
   },
   typingStatus: {

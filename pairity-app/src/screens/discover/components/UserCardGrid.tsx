@@ -135,12 +135,15 @@ const styles = StyleSheet.create({
   },
   matchBadge: {
     position: 'absolute',
-    top: 40,
-    right: 12,
+    top: 36,
+    left: 12,
     backgroundColor: '#FF6B6B',
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    minWidth: 40,
+    alignItems: 'center',
+    zIndex: 1,
   },
   matchText: {
     fontSize: 12,

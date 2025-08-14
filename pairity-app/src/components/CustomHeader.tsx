@@ -107,6 +107,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
             backgroundColor: headerBackgroundColor,
             paddingTop: insets.top,
             height: totalHeight,
+            borderBottomColor: theme.colors.surface,
           },
           style,
         ]}

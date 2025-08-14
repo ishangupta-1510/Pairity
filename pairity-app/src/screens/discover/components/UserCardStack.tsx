@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import { User } from '@/types/discover';
+import { useTheme } from '@/components/ThemeProvider';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const SWIPE_THRESHOLD = 120;
@@ -32,6 +33,7 @@ const UserCardStack: React.FC<UserCardStackProps> = ({
   onPass,
   onProfile,
 }) => {
+  const theme = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const position = useRef(new Animated.ValueXY()).current;
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -176,10 +178,10 @@ const UserCardStack: React.FC<UserCardStackProps> = ({
 
   if (!currentUser) {
     return (
-      <View style={styles.emptyContainer}>
-        <Icon name="search-off" size={64} color="#ddd" />
-        <Text style={styles.emptyTitle}>No More Profiles</Text>
-        <Text style={styles.emptySubtitle}>
+      <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
+        <Icon name="search-off" size={64} color={theme.colors.textSecondary} />
+        <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>No More Profiles</Text>
+        <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>
           Check back later for more matches!
         </Text>
       </View>
@@ -313,7 +315,7 @@ const UserCardStack: React.FC<UserCardStackProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#0A0A0B',
   },
   cardContainer: {
     position: 'absolute',
@@ -325,7 +327,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
   },
@@ -336,13 +338,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'relative',
-    borderRadius: 12,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   cardImage: {
     width: '100%',
     height: '100%',
     position: 'absolute',
+    backgroundColor: '#1A1A1D',
   },
   cardOverlay: {
     position: 'absolute',
@@ -532,12 +535,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
     marginTop: 16,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#666',
     marginTop: 8,
     textAlign: 'center',
   },
