@@ -17,12 +17,13 @@ import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import themeReducer from './slices/themeSlice';
 import notificationReducer from './slices/notificationSlice';
+import videoCallReducer from './slices/videoCallSlice';
 
 // Persist config
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'theme', 'notifications'], // Only persist auth, theme, and notifications
+  whitelist: ['auth', 'theme', 'notifications', 'videoCall'], // Only persist auth, theme, notifications, and video call
   blacklist: ['user'], // Don't persist user data (fetch fresh each time)
 };
 
@@ -47,12 +48,21 @@ const notificationPersistConfig = {
   blacklist: ['activeBanners', 'loading'], // Don't persist temporary state
 };
 
+// Video call persist config
+const videoCallPersistConfig = {
+  key: 'videoCall',
+  storage: AsyncStorage,
+  whitelist: ['settings', 'permissions', 'premiumFeatures', 'callHistory', 'scheduledCalls'],
+  blacklist: ['isInCall', 'localStream', 'remoteStream', 'participants', 'callMessages', 'callEmojis', 'incomingCall'], // Don't persist active call state
+};
+
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   user: userReducer, // Not persisted
   theme: persistReducer(themePersistConfig, themeReducer),
   notifications: persistReducer(notificationPersistConfig, notificationReducer),
+  videoCall: persistReducer(videoCallPersistConfig, videoCallReducer),
 });
 
 // Create persisted reducer

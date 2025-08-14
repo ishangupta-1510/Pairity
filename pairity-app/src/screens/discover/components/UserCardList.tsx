@@ -4,8 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { User } from '@/types/discover';
 
@@ -40,7 +40,11 @@ const UserCardList: React.FC<UserCardListProps> = React.memo(({
       <View style={styles.content}>
         {/* Photo Section */}
         <View style={styles.photoSection}>
-          <Image source={{ uri: user.photos[0] }} style={styles.photo} />
+          <Image 
+            source={{ uri: user.photos[0] }} 
+            style={styles.photo}
+            contentFit="cover"
+          />
           {user.isOnline && (
             <View style={styles.onlineIndicator}>
               <Icon name="circle" size={10} color="#51CF66" />
@@ -149,7 +153,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: 80,
-    height: 100,
+    aspectRatio: 4/5, // Maintain proper aspect ratio
     borderRadius: 8,
   },
   onlineIndicator: {

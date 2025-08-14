@@ -83,7 +83,7 @@ const UserCardGrid: React.FC<UserCardGridProps> = React.memo(({ user, onPress, o
 const styles = StyleSheet.create({
   container: {
     width: cardWidth,
-    height: cardWidth * 1.3,
+    aspectRatio: 4/5, // Use consistent aspect ratio instead of arbitrary height multiplier
     marginBottom: 16,
     borderRadius: 12,
     overflow: 'hidden',

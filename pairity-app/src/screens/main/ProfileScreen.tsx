@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Image,
   FlatList,
   Dimensions,
   Modal,
@@ -13,6 +12,7 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -166,7 +166,11 @@ const ProfileScreen: React.FC = () => {
         setShowPhotoModal(true);
       }}
     >
-      <Image source={{ uri: item.uri }} style={styles.photo} />
+      <Image 
+        source={{ uri: item.uri }} 
+        style={styles.photo}
+        contentFit="cover"
+      />
       {item.isMain && (
         <View style={styles.mainPhotoBadge}>
           <Text style={styles.mainPhotoText}>Main</Text>
@@ -399,7 +403,11 @@ const ProfileScreen: React.FC = () => {
               showsHorizontalScrollIndicator={false}
               data={photos}
               renderItem={({ item }) => (
-                <Image source={{ uri: item.uri }} style={styles.modalPhoto} />
+                <Image 
+                  source={{ uri: item.uri }} 
+                  style={styles.modalPhoto}
+                  contentFit="contain"
+                />
               )}
               keyExtractor={(item) => item.id}
               initialScrollIndex={selectedPhotoIndex}
@@ -442,12 +450,11 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   photoGallery: {
-    height: 400,
+    aspectRatio: 4/5, // Standard portrait ratio for dating apps
   },
   photo: {
-    width: screenWidth,
-    height: 400,
-    resizeMode: 'cover',
+    width: '100%',
+    aspectRatio: 4/5,
   },
   mainPhotoBadge: {
     position: 'absolute',
@@ -696,9 +703,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalPhoto: {
-    width: screenWidth,
-    height: '80%',
-    resizeMode: 'contain',
+    width: '100%',
+    flex: 1,
   },
   modalClose: {
     position: 'absolute',
