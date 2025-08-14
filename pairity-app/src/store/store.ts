@@ -16,12 +16,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import themeReducer from './slices/themeSlice';
+import notificationReducer from './slices/notificationSlice';
 
 // Persist config
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'theme'], // Only persist auth and theme
+  whitelist: ['auth', 'theme', 'notifications'], // Only persist auth, theme, and notifications
   blacklist: ['user'], // Don't persist user data (fetch fresh each time)
 };
 
@@ -38,11 +39,20 @@ const themePersistConfig = {
   storage: AsyncStorage,
 };
 
+// Notification persist config
+const notificationPersistConfig = {
+  key: 'notifications',
+  storage: AsyncStorage,
+  whitelist: ['preferences', 'permissionGranted', 'fcmToken'],
+  blacklist: ['activeBanners', 'loading'], // Don't persist temporary state
+};
+
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   user: userReducer, // Not persisted
   theme: persistReducer(themePersistConfig, themeReducer),
+  notifications: persistReducer(notificationPersistConfig, notificationReducer),
 });
 
 // Create persisted reducer

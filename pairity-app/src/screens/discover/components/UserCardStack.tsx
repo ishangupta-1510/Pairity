@@ -10,7 +10,7 @@ import {
   PanResponder,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import FastImage from 'react-native-fast-image';
+import { Image } from 'expo-image';
 import { User } from '@/types/discover';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -200,10 +200,10 @@ const UserCardStack: React.FC<UserCardStackProps> = ({
             styles.nextCard,
           ]}
         >
-          <FastImage
+          <Image
             source={{ uri: nextUser.photos[0] }}
             style={styles.cardImage}
-            resizeMode={FastImage.resizeMode.cover}
+            contentFit="cover"
           />
         </Animated.View>
       )}
@@ -214,11 +214,12 @@ const UserCardStack: React.FC<UserCardStackProps> = ({
         {...panResponder.panHandlers}
       >
         <TouchableOpacity activeOpacity={1} onPress={handlePhotoPress}>
-          <FastImage
-            source={{ uri: currentUser.photos[currentPhotoIndex] }}
-            style={styles.cardImage}
-            resizeMode={FastImage.resizeMode.cover}
-          >
+          <View style={styles.cardImageContainer}>
+            <Image
+              source={{ uri: currentUser.photos[currentPhotoIndex] }}
+              style={styles.cardImage}
+              contentFit="cover"
+            />
             <View style={styles.cardOverlay}>
               {/* Photo Indicators */}
               <View style={styles.photoIndicators}>
@@ -278,7 +279,7 @@ const UserCardStack: React.FC<UserCardStackProps> = ({
                 </TouchableOpacity>
               </ScrollView>
             </View>
-          </FastImage>
+          </View>
         </TouchableOpacity>
       </Animated.View>
 
@@ -331,12 +332,24 @@ const styles = StyleSheet.create({
   nextCard: {
     zIndex: -1,
   },
+  cardImageContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   cardImage: {
     width: '100%',
     height: '100%',
+    position: 'absolute',
   },
   cardOverlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   photoIndicators: {

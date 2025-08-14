@@ -25,7 +25,12 @@
     "build:ios": "expo build:ios",
     "validate": "npm run lint && npm run format:check && npm run typecheck",
     "pre-commit": "lint-staged",
-    "commit": "cz"
+    "commit": "cz",
+    "prompts": "node scripts/auto-prompt-processor.js",
+    "prompts:status": "node scripts/auto-prompt-processor.js --status",
+    "prompts:reset": "node scripts/auto-prompt-processor.js --reset",
+    "prompts:clear-blocked": "node scripts/auto-prompt-processor.js --clear-blocked",
+    "prompts:test": "node scripts/test-setup.js"
   },
   "dependencies": {
     "expo": "~49.0.0",

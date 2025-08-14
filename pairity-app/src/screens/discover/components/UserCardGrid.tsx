@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import FastImage from 'react-native-fast-image';
+import { Image } from 'expo-image';
 import { User } from '@/types/discover';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -23,11 +23,12 @@ interface UserCardGridProps {
 const UserCardGrid: React.FC<UserCardGridProps> = React.memo(({ user, onPress, onLike }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
-      <FastImage
-        source={{ uri: user.photos[0] }}
-        style={styles.image}
-        resizeMode={FastImage.resizeMode.cover}
-      >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: user.photos[0] }}
+          style={styles.image}
+          contentFit="cover"
+        />
         <View style={styles.overlay}>
           {/* Online Indicator */}
           {user.isOnline && (
@@ -74,7 +75,7 @@ const UserCardGrid: React.FC<UserCardGridProps> = React.memo(({ user, onPress, o
             </View>
           )}
         </View>
-      </FastImage>
+      </View>
     </TouchableOpacity>
   );
 });
@@ -92,12 +93,22 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  imageContainer: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
   image: {
     width: '100%',
     height: '100%',
+    position: 'absolute',
   },
   overlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'flex-end',
   },

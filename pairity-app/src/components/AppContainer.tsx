@@ -21,7 +21,7 @@ const AppContent: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
       <RootNavigator />
     </ThemeProvider>
   );
