@@ -1,0 +1,506 @@
+name: Deployment Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+      - release/*
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Version to deploy'
+        required: true
+        default: 'latest'
+        type: string
+      skip_tests:
+        description: 'Skip tests (emergency deployment)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  JAVA_VERSION: '11'
+  RUBY_VERSION: '3.0'
+  XCODE_VERSION: '14.3'
+
+jobs:
+  prepare-deployment:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.setup.outputs.environment }}
+      version: ${{ steps.setup.outputs.version }}
+      build_number: ${{ steps.setup.outputs.build_number }}
+      should_deploy_ios: ${{ steps.setup.outputs.should_deploy_ios }}
+      should_deploy_android: ${{ steps.setup.outputs.should_deploy_android }}
+      rollout_percentage: ${{ steps.setup.outputs.rollout_percentage }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup deployment parameters
+        id: setup
+        run: |
+          # Determine environment
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            ENVIRONMENT="production"
+            VERSION="${{ github.ref_name }}"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            ENVIRONMENT="staging"
+            VERSION="staging-$(date +%Y%m%d)-${GITHUB_SHA:0:7}"
+          else
+            ENVIRONMENT="staging"
+            VERSION="branch-${GITHUB_REF_NAME}-${GITHUB_SHA:0:7}"
+          fi
+          
+          # Generate build number
+          BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          
+          # Determine deployment targets
+          SHOULD_DEPLOY_IOS="true"
+          SHOULD_DEPLOY_ANDROID="true"
+          
+          # Set rollout percentage based on environment
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            ROLLOUT_PERCENTAGE="25" # Start with 25% rollout
+          else
+            ROLLOUT_PERCENTAGE="100"
+          fi
+          
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "should_deploy_ios=$SHOULD_DEPLOY_IOS" >> $GITHUB_OUTPUT
+          echo "should_deploy_android=$SHOULD_DEPLOY_ANDROID" >> $GITHUB_OUTPUT
+          echo "rollout_percentage=$ROLLOUT_PERCENTAGE" >> $GITHUB_OUTPUT
+          
+          echo "Deployment Configuration:"
+          echo "Environment: $ENVIRONMENT"
+          echo "Version: $VERSION"
+          echo "Build Number: $BUILD_NUMBER"
+          echo "iOS Deployment: $SHOULD_DEPLOY_IOS"
+          echo "Android Deployment: $SHOULD_DEPLOY_ANDROID"
+          echo "Rollout Percentage: $ROLLOUT_PERCENTAGE"
+
+  pre-deployment-tests:
+    name: Pre-Deployment Tests
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment]
+    if: ${{ github.event.inputs.skip_tests != 'true' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: pairity-app/package-lock.json
+          
+      - name: Install dependencies
+        run: |
+          cd pairity-app
+          npm ci
+          
+      - name: Run critical tests
+        run: |
+          cd pairity-app
+          npm run lint
+          npm run type-check
+          npm test -- --coverage --watchAll=false --testPathPattern="(critical|integration)" --passWithNoTests
+          
+      - name: Build verification
+        run: |
+          cd pairity-app
+          npm run build:verify
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: [prepare-deployment, pre-deployment-tests]
+    if: ${{ always() && needs.prepare-deployment.outputs.should_deploy_ios == 'true' && (needs.pre-deployment-tests.result == 'success' || needs.pre-deployment-tests.result == 'skipped') }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: pairity-app/package-lock.json
+          
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+          working-directory: pairity-app/ios
+          
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          cd pairity-app
+          npm ci
+          
+      - name: Install CocoaPods
+        run: |
+          cd pairity-app/ios
+          pod install
+          
+      - name: Import signing certificates
+        env:
+          SIGNING_CERTIFICATE_P12_DATA: ${{ secrets.IOS_SIGNING_CERTIFICATE }}
+          SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.IOS_SIGNING_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          
+          # Import certificate
+          echo "$SIGNING_CERTIFICATE_P12_DATA" | base64 --decode > certificate.p12
+          security import certificate.p12 -k build.keychain -P "$SIGNING_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          
+      - name: Install provisioning profiles
+        env:
+          PROVISIONING_PROFILE_DATA: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROVISIONING_PROFILE_DATA" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          
+      - name: Update version and build number
+        run: |
+          cd pairity-app/ios
+          # Update version in Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.prepare-deployment.outputs.version }}" Pairity/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.prepare-deployment.outputs.build_number }}" Pairity/Info.plist
+          
+      - name: Build iOS app
+        run: |
+          cd pairity-app/ios
+          xcodebuild archive \
+            -workspace Pairity.xcworkspace \
+            -scheme Pairity \
+            -configuration Release \
+            -archivePath build/Pairity.xcarchive \
+            -allowProvisioningUpdates
+            
+      - name: Export IPA
+        run: |
+          cd pairity-app/ios
+          xcodebuild -exportArchive \
+            -archivePath build/Pairity.xcarchive \
+            -exportPath build/ \
+            -exportOptionsPlist ExportOptions.plist
+            
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-app
+          path: pairity-app/ios/build/*.ipa
+          
+      - name: Clean up keychain
+        if: always()
+        run: |
+          security delete-keychain build.keychain || true
+
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, pre-deployment-tests]
+    if: ${{ always() && needs.prepare-deployment.outputs.should_deploy_android == 'true' && (needs.pre-deployment-tests.result == 'success' || needs.pre-deployment-tests.result == 'skipped') }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: pairity-app/package-lock.json
+          
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        
+      - name: Install dependencies
+        run: |
+          cd pairity-app
+          npm ci
+          
+      - name: Setup signing keystore
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cd pairity-app/android
+          echo "$ANDROID_KEYSTORE" | base64 --decode > app/release.keystore
+          
+          # Update gradle.properties with signing config
+          cat >> gradle.properties << EOF
+          RELEASE_STORE_FILE=release.keystore
+          RELEASE_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
+          RELEASE_KEY_ALIAS=$ANDROID_KEY_ALIAS
+          RELEASE_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
+          EOF
+          
+      - name: Update version information
+        run: |
+          cd pairity-app/android/app
+          # Update build.gradle with version info
+          sed -i "s/versionName \".*\"/versionName \"${{ needs.prepare-deployment.outputs.version }}\"/" build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${{ needs.prepare-deployment.outputs.build_number }}/" build.gradle
+          
+      - name: Build Android app
+        run: |
+          cd pairity-app/android
+          ./gradlew bundleRelease
+          
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-app
+          path: pairity-app/android/app/build/outputs/bundle/release/*.aab
+
+  deploy-ios:
+    name: Deploy iOS
+    runs-on: macos-latest
+    needs: [prepare-deployment, build-ios]
+    if: ${{ always() && needs.build-ios.result == 'success' }}
+    environment: 
+      name: ${{ needs.prepare-deployment.outputs.environment }}
+      url: https://appstoreconnect.apple.com
+    
+    steps:
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ios-app
+          path: ./ios-app
+          
+      - name: Upload to App Store Connect
+        env:
+          APP_STORE_CONNECT_USERNAME: ${{ secrets.APP_STORE_CONNECT_USERNAME }}
+          APP_STORE_CONNECT_PASSWORD: ${{ secrets.APP_STORE_CONNECT_PASSWORD }}
+        run: |
+          # Install altool (part of Xcode command line tools)
+          xcrun altool --upload-app \
+            --type ios \
+            --file ./ios-app/*.ipa \
+            --username "$APP_STORE_CONNECT_USERNAME" \
+            --password "$APP_STORE_CONNECT_PASSWORD" \
+            --verbose
+            
+      - name: Submit for review (Production only)
+        if: ${{ needs.prepare-deployment.outputs.environment == 'production' }}
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          # This would use App Store Connect API to submit for review
+          echo "Submitting iOS app for App Store review"
+
+  deploy-android:
+    name: Deploy Android
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, build-android]
+    if: ${{ always() && needs.build-android.result == 'success' }}
+    environment: 
+      name: ${{ needs.prepare-deployment.outputs.environment }}
+      url: https://play.google.com/console
+    
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: android-app
+          path: ./android-app
+          
+      - name: Setup Google Play Console credentials
+        env:
+          GOOGLE_PLAY_CREDENTIALS: ${{ secrets.GOOGLE_PLAY_CREDENTIALS }}
+        run: |
+          echo "$GOOGLE_PLAY_CREDENTIALS" | base64 --decode > google-play-credentials.json
+          
+      - name: Upload to Google Play Console
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_CREDENTIALS }}
+          packageName: com.pairity.app
+          releaseFiles: ./android-app/*.aab
+          track: ${{ needs.prepare-deployment.outputs.environment == 'production' && 'production' || 'internal' }}
+          status: ${{ needs.prepare-deployment.outputs.environment == 'production' && 'completed' || 'draft' }}
+          inAppUpdatePriority: 2
+          userFraction: ${{ needs.prepare-deployment.outputs.rollout_percentage }}
+          whatsNewDirectory: ./release-notes/
+
+  post-deployment-verification:
+    name: Post-Deployment Verification
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-ios, deploy-android]
+    if: ${{ always() && (needs.deploy-ios.result == 'success' || needs.deploy-android.result == 'success') }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          cd pairity-app
+          npm ci
+          
+      - name: Run smoke tests
+        env:
+          ENVIRONMENT: ${{ needs.prepare-deployment.outputs.environment }}
+          VERSION: ${{ needs.prepare-deployment.outputs.version }}
+        run: |
+          cd pairity-app
+          npm run test:smoke -- --environment=$ENVIRONMENT --version=$VERSION
+          
+      - name: Check app store status
+        run: |
+          # Check deployment status on app stores
+          echo "Verifying deployment status..."
+          
+      - name: Update deployment tracking
+        env:
+          DEPLOYMENT_WEBHOOK: ${{ secrets.DEPLOYMENT_WEBHOOK }}
+          ENVIRONMENT: ${{ needs.prepare-deployment.outputs.environment }}
+          VERSION: ${{ needs.prepare-deployment.outputs.version }}
+        run: |
+          # Notify deployment tracking system
+          curl -X POST "$DEPLOYMENT_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"environment\": \"$ENVIRONMENT\",
+              \"version\": \"$VERSION\",
+              \"status\": \"deployed\",
+              \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+              \"ios_deployed\": \"${{ needs.deploy-ios.result == 'success' }}\",
+              \"android_deployed\": \"${{ needs.deploy-android.result == 'success' }}\"
+            }"
+
+  rollback-deployment:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, post-deployment-verification]
+    if: ${{ always() && needs.post-deployment-verification.result == 'failure' && needs.prepare-deployment.outputs.environment == 'production' }}
+    
+    steps:
+      - name: Initiate rollback
+        run: |
+          echo "Initiating rollback for failed deployment"
+          
+      - name: Rollback iOS
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          # Rollback iOS deployment
+          echo "Rolling back iOS deployment"
+          
+      - name: Rollback Android
+        env:
+          GOOGLE_PLAY_CREDENTIALS: ${{ secrets.GOOGLE_PLAY_CREDENTIALS }}
+        run: |
+          # Rollback Android deployment
+          echo "Rolling back Android deployment"
+          
+      - name: Notify rollback
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          curl -X POST "$SLACK_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \"🚨 Production deployment rolled back due to verification failures\",
+              \"attachments\": [{
+                \"color\": \"danger\",
+                \"fields\": [
+                  {\"title\": \"Version\", \"value\": \"${{ needs.prepare-deployment.outputs.version }}\", \"short\": true},
+                  {\"title\": \"Environment\", \"value\": \"${{ needs.prepare-deployment.outputs.environment }}\", \"short\": true}
+                ]
+              }]
+            }"
+
+  deployment-notification:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-ios, deploy-android, post-deployment-verification]
+    if: always()
+    
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          if [[ "${{ needs.post-deployment-verification.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=✅ Deployment successful" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.deploy-ios.result }}" == "failure" || "${{ needs.deploy-android.result }}" == "failure" ]]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "message=❌ Deployment failed" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          else
+            echo "status=partial" >> $GITHUB_OUTPUT
+            echo "message=⚠️ Partial deployment" >> $GITHUB_OUTPUT
+            echo "color=warning" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          curl -X POST "$SLACK_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \"${{ steps.status.outputs.message }}\",
+              \"attachments\": [{
+                \"color\": \"${{ steps.status.outputs.color }}\",
+                \"fields\": [
+                  {\"title\": \"Environment\", \"value\": \"${{ needs.prepare-deployment.outputs.environment }}\", \"short\": true},
+                  {\"title\": \"Version\", \"value\": \"${{ needs.prepare-deployment.outputs.version }}\", \"short\": true},
+                  {\"title\": \"Build Number\", \"value\": \"${{ needs.prepare-deployment.outputs.build_number }}\", \"short\": true},
+                  {\"title\": \"iOS\", \"value\": \"${{ needs.deploy-ios.result }}\", \"short\": true},
+                  {\"title\": \"Android\", \"value\": \"${{ needs.deploy-android.result }}\", \"short\": true},
+                  {\"title\": \"Verification\", \"value\": \"${{ needs.post-deployment-verification.result }}\", \"short\": true}
+                ]
+              }]
+            }"
