@@ -23,6 +23,7 @@ export type HomeStackParamList = {
   Home: undefined;
   UserProfile: { userId: string };
   Settings: undefined;
+  NotificationCenter: undefined;
 };
 
 // Discover Stack Types
@@ -53,6 +54,8 @@ export type ProfileStackParamList = {
   AccountSettings: undefined;
   PrivacySettings: undefined;
   NotificationSettings: undefined;
+  QuietHoursSettings: undefined;
+  AdvancedNotificationSettings: undefined;
   HelpSupport: undefined;
   About: undefined;
 };

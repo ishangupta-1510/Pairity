@@ -7,6 +7,7 @@ import { ThemeProvider } from './ThemeProvider';
 import RootNavigator from '@/navigation/RootNavigator';
 import ErrorBoundary from './ErrorBoundary';
 import Loading from './Loading';
+import NotificationManager from './notifications/NotificationManager';
 import { useDispatch } from 'react-redux';
 import { loadStoredAuth } from '@/store/slices/authSlice';
 
@@ -23,6 +24,7 @@ const AppContent: React.FC = () => {
     <ThemeProvider>
       <StatusBar style="light" />
       <RootNavigator />
+      <NotificationManager />
     </ThemeProvider>
   );
 };
