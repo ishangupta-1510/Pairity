@@ -2,21 +2,33 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
-import { setTheme } from '@/store/slices/themeSlice';
+import { setTheme, setIsDark } from '@/store/slices/themeSlice';
 
 export interface Theme {
   colors: {
     primary: string;
     secondary: string;
+    accent: string;
     background: string;
     surface: string;
+    surfaceLight: string;
+    card: string;
     text: string;
     textSecondary: string;
+    textTertiary: string;
     border: string;
+    borderLight: string;
     error: string;
     success: string;
     warning: string;
     info: string;
+    gradientStart: string;
+    gradientEnd: string;
+    overlay: string;
+    shadow: string;
+    highlight: string;
+    premium: string;
+    premiumGold: string;
   };
   spacing: {
     xs: number;
@@ -41,15 +53,27 @@ const lightTheme: Theme = {
   colors: {
     primary: '#FF6B6B',
     secondary: '#4ECDC4',
+    accent: '#9B59B6',
     background: '#FFFFFF',
     surface: '#F8F9FA',
-    text: '#333333',
-    textSecondary: '#666666',
-    border: '#E1E5E9',
-    error: '#FF6B6B',
-    success: '#51CF66',
-    warning: '#FFD43B',
-    info: '#339AF0',
+    surfaceLight: '#FAFBFC',
+    card: '#FFFFFF',
+    text: '#2C3E50',
+    textSecondary: '#7F8C8D',
+    textTertiary: '#95A5A6',
+    border: '#E1E8ED',
+    borderLight: '#F1F4F7',
+    error: '#E74C3C',
+    success: '#27AE60',
+    warning: '#F39C12',
+    info: '#3498DB',
+    gradientStart: '#FF6B6B',
+    gradientEnd: '#4ECDC4',
+    overlay: 'rgba(0, 0, 0, 0.5)',
+    shadow: '#000000',
+    highlight: '#FFE5E5',
+    premium: '#FFD700',
+    premiumGold: '#FFA500',
   },
   spacing: {
     xs: 4,
@@ -88,15 +112,56 @@ const lightTheme: Theme = {
   },
 };
 
+// Premium dark theme with sophisticated colors
 const darkTheme: Theme = {
   ...lightTheme,
   colors: {
-    ...lightTheme.colors,
-    background: '#1A1A1A',
-    surface: '#2D2D2D',
-    text: '#FFFFFF',
-    textSecondary: '#CCCCCC',
-    border: '#404040',
+    primary: '#FF7979',  // Softer coral red for dark mode
+    secondary: '#6DD5ED',  // Softer cyan
+    accent: '#C06FE8',  // Soft purple accent
+    background: '#0A0A0B',  // Rich black background
+    surface: '#151517',  // Slightly lighter surface
+    surfaceLight: '#1E1E21',  // Card backgrounds
+    card: '#1A1A1D',  // Premium card background
+    text: '#F5F5F7',  // Off-white for better readability
+    textSecondary: '#B8B8C1',  // Muted gray text
+    textTertiary: '#7A7A85',  // Even more muted
+    border: '#2A2A2F',  // Subtle borders
+    borderLight: '#35353B',  // Lighter borders
+    error: '#FF6B6B',
+    success: '#4ADE80',
+    warning: '#FBBF24',
+    info: '#60A5FA',
+    gradientStart: '#FF6B9D',  // Premium gradient start
+    gradientEnd: '#C06FE8',  // Premium gradient end
+    overlay: 'rgba(0, 0, 0, 0.7)',
+    shadow: '#000000',
+    highlight: 'rgba(255, 107, 157, 0.1)',  // Subtle highlight
+    premium: '#FFD700',  // Gold for premium features
+    premiumGold: '#FFC107',  // Alternative gold
+  },
+  shadows: {
+    small: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3,
+      elevation: 3,
+    },
+    medium: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+      elevation: 5,
+    },
+    large: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.35,
+      shadowRadius: 10,
+      elevation: 10,
+    },
   },
 };
 
@@ -109,16 +174,23 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const dispatch = useDispatch();
   const systemColorScheme = useColorScheme();
-  const { mode } = useSelector((state: RootState) => state.theme);
+  const { mode, isDark } = useSelector((state: RootState) => state.theme);
 
+  // Initialize system theme on app start and when system changes
   useEffect(() => {
     if (mode === 'system') {
-      const currentTheme = systemColorScheme === 'dark' ? 'dark' : 'light';
-      dispatch(setTheme(currentTheme));
+      const systemIsDark = systemColorScheme === 'dark';
+      dispatch(setIsDark(systemIsDark));
     }
   }, [systemColorScheme, mode, dispatch]);
 
-  const currentTheme = mode === 'dark' ? darkTheme : lightTheme;
+  // Determine which theme to use
+  const currentTheme = (() => {
+    if (mode === 'system') {
+      return systemColorScheme === 'dark' ? darkTheme : lightTheme;
+    }
+    return mode === 'dark' ? darkTheme : lightTheme;
+  })();
 
   return (
     <ThemeContext.Provider value={currentTheme}>

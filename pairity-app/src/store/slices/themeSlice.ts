@@ -8,8 +8,8 @@ export interface ThemeState {
 }
 
 const initialState: ThemeState = {
-  mode: 'system',
-  isDark: false,
+  mode: 'system',  // Use system theme preference by default
+  isDark: false,  // Will be updated based on system preference
 };
 
 const themeSlice = createSlice({
@@ -27,14 +27,16 @@ const themeSlice = createSlice({
     },
     toggleTheme: (state) => {
       if (state.mode === 'system') {
-        state.mode = 'light';
-        state.isDark = false;
+        // If currently on system mode, switch to manual mode opposite of current system preference
+        state.mode = state.isDark ? 'light' : 'dark';
+        state.isDark = !state.isDark;
       } else if (state.mode === 'light') {
         state.mode = 'dark';
         state.isDark = true;
       } else {
-        state.mode = 'light';
-        state.isDark = false;
+        // If dark mode, cycle through: dark -> light -> system
+        state.mode = 'system';
+        // isDark will be set by ThemeProvider based on system
       }
     },
   },
