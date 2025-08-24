@@ -36,6 +36,13 @@ This is the Pairity application project. This document contains important instru
 - Mark tasks as completed immediately upon finishing
 - Break complex tasks into smaller, manageable steps
 
+### Git Commit Guidelines
+- **IMPORTANT**: Do NOT add any Claude Code signatures or co-authorship to commits
+- Do NOT include "🤖 Generated with [Claude Code]" in commit messages
+- Do NOT add "Co-Authored-By: Claude <noreply@anthropic.com>" to commits
+- Write clean, professional commit messages without any AI/bot attribution
+- Follow conventional commit format (feat:, fix:, chore:, etc.)
+
 ### Documentation Requirements
 - **IMPORTANT**: ALL major changes MUST be documented in the /docs folder
 - Update relevant documentation files immediately after implementing changes
@@ -372,6 +379,11 @@ This section documents all major changes made to the codebase. Each entry should
 - **Created CLAUDE.md**: Initial setup of Claude Code instructions file
   - Files: CLAUDE.md (new)
   - Notes: This file will serve as the reference for Claude Code when working on the Pairity project
+
+#### 2025-08-24
+- **Updated Git Commit Guidelines**: Removed Claude Code signature from commits
+  - Files: CLAUDE.md
+  - Notes: Added explicit instructions to prevent AI/bot attribution in commit messages
 
 <!-- Add new changes above this line -->
 
