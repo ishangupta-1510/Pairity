@@ -1,6 +1,39 @@
 {
   "name": "pairity-app",
   "version": "1.0.0",
+  "description": "Pairity - Premium Dating App | Best Open Source Dating App | Tinder Clone | Dating Application with React Native",
+  "keywords": [
+    "dating-app",
+    "tinder-clone",
+    "dating-application",
+    "matchmaking-app",
+    "dating-platform",
+    "react-native-dating-app",
+    "dating-app-source-code",
+    "open-source-dating-app",
+    "dating-app-template",
+    "social-dating-app",
+    "online-dating-app",
+    "bumble-clone",
+    "hinge-clone",
+    "dating-app-github",
+    "mobile-dating-app",
+    "video-dating-app",
+    "dating-chat-app",
+    "location-based-dating",
+    "react-native",
+    "typescript",
+    "swipe-interface",
+    "match-making",
+    "dating-app-ui",
+    "premium-dating-app"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ishangupta-1510/Pairity"
+  },
+  "author": "Ishan Gupta",
+  "license": "MIT",
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -52,6 +85,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@playwright/test": "^1.55.0",
     "@types/react": "~19.0.10",
     "@types/react-native-draggable-flatlist": "^1.1.1",
     "@types/react-native-vector-icons": "^6.4.18",
@@ -66,6 +100,7 @@
     "eslint-plugin-react-native": "^5.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
+    "playwright": "^1.55.0",
     "prettier": "^3.6.2",
     "react-native-dotenv": "^3.4.11",
     "typescript": "~5.8.3"
