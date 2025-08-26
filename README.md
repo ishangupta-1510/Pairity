@@ -1,7 +1,7 @@
 # Pairity - Premium Dating App
 
 <p align="center">
-  <img src="pairity-app/assets/icon.png" alt="Pairity Logo" width="150" height="150">
+  <img src="https://via.placeholder.com/150x150/FF7979/FFFFFF?text=Pairity" alt="Pairity Logo" width="150" height="150">
 </p>
 
 <p align="center">
@@ -38,10 +38,10 @@
 ## 📱 Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/swipe.png" alt="Swipe Screen" width="200">
-  <img src="docs/screenshots/chat.png" alt="Chat Screen" width="200">
-  <img src="docs/screenshots/profile.png" alt="Profile Screen" width="200">
-  <img src="docs/screenshots/discover.png" alt="Discover Screen" width="200">
+  <img src="https://via.placeholder.com/200x400/0A0A0B/FF7979?text=Swipe+Screen" alt="Swipe Screen" width="200">
+  <img src="https://via.placeholder.com/200x400/0A0A0B/FF7979?text=Chat+Screen" alt="Chat Screen" width="200">
+  <img src="https://via.placeholder.com/200x400/0A0A0B/FF7979?text=Profile+Screen" alt="Profile Screen" width="200">
+  <img src="https://via.placeholder.com/200x400/0A0A0B/FF7979?text=Discover+Screen" alt="Discover Screen" width="200">
 </p>
 
 ## 🚀 Quick Start
